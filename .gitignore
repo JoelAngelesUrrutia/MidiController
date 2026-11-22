@@ -24,6 +24,10 @@ obj/
 *.tmp
 *.temp
 
+# Build publicada e instalador
+publish/
+installer/output/
+
 # OS generated files
 .DS_Store
 Thumbs.db

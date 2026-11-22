@@ -38,11 +38,10 @@
                      Padding="12"/>
         </Border>
 
-        <TextBlock Grid.Row="2"
+                <TextBlock Grid.Row="2"
                    Margin="4,8,4,0"
                    FontSize="12"
                    Foreground="#FF707070"
-                   Text="Play → Play/Pausa · Stop → Anterior · Record → Siguiente"/>
-
+                   Text="Play → Play/Pausa · Stop → Anterior · Record → Siguiente · Knob CC7 → Volumen" />
     </Grid>
 </Window>
