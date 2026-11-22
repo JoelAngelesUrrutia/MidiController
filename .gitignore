@@ -28,3 +28,7 @@ obj/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Proyectos temporales del compilador XAML de WPF
+*_wpftmp.csproj
+*_wpftmp.*

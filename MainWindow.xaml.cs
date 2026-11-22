@@ -1,134 +1,82 @@
-﻿using System.Text;
+﻿using System;
+using System.ComponentModel;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using MidiController.Models;
+using MidiController.Services;
 
 namespace MidiController;
 
-/// <summary>
-/// Interaction logic for MainWindow.xaml
-/// </summary>
 public partial class MainWindow : Window
 {
+    private readonly MidiInputService? _midiInputService;
+
     public MainWindow()
     {
         InitializeComponent();
 
-        // Aseguramos que el teclado llegue a la ventana y no se pierda en el foco inicial.
-        Loaded += (_, _) => KeysBorder.Focus();
-    }
-
-    private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
-    {
-        // Alt+tecla llega como Key.System y la tecla real viene en SystemKey.
-        Key key = e.Key == Key.System ? e.SystemKey : e.Key;
-
-        switch (key)
+        try
         {
-            // Los modificadores por sí solos no escriben nada.
-            case Key.LeftShift:
-            case Key.RightShift:
-            case Key.LeftCtrl:
-            case Key.RightCtrl:
-            case Key.LeftAlt:
-            case Key.RightAlt:
-            case Key.LWin:
-            case Key.RWin:
-            case Key.Apps:
-            case Key.None:
-            case Key.ImeProcessed:
-            case Key.DeadCharProcessed:
-                return;
+            _midiInputService = new MidiInputService();
 
-            case Key.Back:
-                if (KeysTextBlock.Text.Length > 0)
-                {
-                    KeysTextBlock.Text = KeysTextBlock.Text[..^1];
-                }
-                e.Handled = true;
-                UpdateHint();
-                return;
+            DeviceTextBlock.Text = $"Escuchando: {_midiInputService.DeviceName}";
+            _midiInputService.MessageReceived += OnMidiMessageReceived;
+            _midiInputService.ButtonPressed += OnMidiButtonPressed;
 
-            case Key.Escape:
-                KeysTextBlock.Text = string.Empty;
-                e.Handled = true;
-                UpdateHint();
-                return;
-
-            case Key.Enter:
-                Append(Environment.NewLine);
-                e.Handled = true;
-                return;
-
-            case Key.Tab:
-                Append("\t");
-                e.Handled = true;
-                return;
-
-            case Key.Space:
-                Append(" ");
-                e.Handled = true;
-                return;
-
-            default:
-                Append(GetKeyText(key));
-                e.Handled = true;
-                return;
+            // Liberamos el dispositivo MIDI al cerrar la ventana.
+            Closed += (_, _) => _midiInputService.Dispose();
+        }
+        catch (InvalidOperationException ex)
+        {
+            DeviceTextBlock.Text = ex.Message;
         }
     }
 
-    private void Append(string text)
+    /// <summary>
+    /// Llega desde el hilo de fondo de DryWetMidi: no tocar la UI directamente.
+    /// </summary>
+    private void OnMidiMessageReceived(string message)
     {
-        if (text.Length == 0)
-        {
-            return;
-        }
-
-        KeysTextBlock.Text += text;
-        UpdateHint();
+        Dispatcher.BeginInvoke(new Action(() => AppendLog(message)));
     }
 
-    private void UpdateHint()
+    /// <summary>
+    /// También llega en el hilo de fondo; lo pasamos a la UI para futuras
+    /// acciones que necesiten interfaz o diálogos.
+    /// </summary>
+    private void OnMidiButtonPressed(MmcCommand command)
     {
-        HintTextBlock.Visibility = KeysTextBlock.Text.Length == 0
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        Dispatcher.BeginInvoke(new Action(() => HandleButton(command)));
     }
 
-    private static string GetKeyText(Key key)
+    private void HandleButton(MmcCommand command)
     {
-        if (key >= Key.D0 && key <= Key.D9)
+        // Mapeo provisional; más adelante será configurable desde la UI.
+        try
         {
-            return ((char)('0' + (key - Key.D0))).ToString();
-        }
+            switch (command)
+            {
+                case MmcCommand.Play:
+                    MediaKeyService.PlayPause();
+                    break;
 
-        if (key >= Key.NumPad0 && key <= Key.NumPad9)
-        {
-            return ((char)('0' + (key - Key.NumPad0))).ToString();
-        }
+                case MmcCommand.Stop:
+                    MediaKeyService.PreviousTrack();
+                    break;
 
-        return key switch
+                case MmcCommand.Record:
+                    MediaKeyService.NextTrack();
+                    break;
+            }
+        }
+        catch (Win32Exception ex)
         {
-            Key.OemComma => ",",
-            Key.OemPeriod => ".",
-            Key.OemMinus => "-",
-            Key.OemPlus => "=",
-            Key.OemQuestion => "/",
-            Key.OemSemicolon => ";",
-            Key.OemQuotes => "'",
-            Key.OemOpenBrackets => "[",
-            Key.OemCloseBrackets => "]",
-            Key.OemPipe => "\\",
-            Key.OemBackslash => "\\",
-            Key.OemTilde => "`",
-            Key.Left or Key.Right or Key.Up or Key.Down => $"<{key}>",
-            _ => key.ToString(),
-        };
+            AppendLog($"[error] No se pudo enviar la tecla multimedia: {ex.Message}");
+        }
+    }
+
+    private void AppendLog(string message)
+    {
+        MidiLogTextBox.AppendText(message + Environment.NewLine);
+        MidiLogTextBox.ScrollToEnd();
     }
 }

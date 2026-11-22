@@ -5,40 +5,44 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MidiController"
         mc:Ignorable="d"
-        Title="MidiController" Height="450" Width="800"
-        PreviewKeyDown="Window_PreviewKeyDown">
+        Title="MidiController"
+        Height="450"
+        Width="800">
     <Grid Margin="24">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Border x:Name="KeysBorder"
-                Grid.Row="0"
-                Focusable="True"
+        <TextBlock x:Name="DeviceTextBlock"
+                   Margin="0,0,0,8"
+                   FontSize="14"
+                   Foreground="#FF505050"/>
+
+        <Border Grid.Row="1"
                 Background="#FFF7F7F7"
                 BorderBrush="#FFD6D6D6"
                 BorderThickness="1"
                 CornerRadius="8">
-            <Grid Margin="16">
-                <TextBlock x:Name="HintTextBlock"
-                           FontFamily="Consolas"
-                           FontSize="20"
-                           Foreground="#FF9C9C9C"
-                           Text="Presiona cualquier tecla..." />
-                <TextBlock x:Name="KeysTextBlock"
-                           FontFamily="Consolas"
-                           FontSize="20"
-                           Foreground="#FF202020"
-                           TextWrapping="Wrap"
-                           VerticalAlignment="Top" />
-            </Grid>
+            <TextBox x:Name="MidiLogTextBox"
+                     IsReadOnly="True"
+                     AcceptsReturn="True"
+                     TextWrapping="NoWrap"
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Auto"
+                     FontFamily="Consolas"
+                     FontSize="16"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     Padding="12"/>
         </Border>
 
-        <TextBlock Grid.Row="1"
+        <TextBlock Grid.Row="2"
                    Margin="4,8,4,0"
                    FontSize="12"
                    Foreground="#FF707070"
-                   Text="Backspace borra el último carácter · Esc limpia todo" />
+                   Text="Play → Play/Pausa · Stop → Anterior · Record → Siguiente"/>
+
     </Grid>
 </Window>
