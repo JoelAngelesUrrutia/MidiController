@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
+using System.IO;
 using System.Windows;
+using System.Windows.Resources;
 // WinForms también define Application (el ImplicitUsings de UseWindowsForms lo
 // agrega como global using), así que hay que decir cuál queremos.
 using Application = System.Windows.Application;
@@ -19,6 +21,7 @@ public partial class MainWindow : Window
     private const int VolumeControlNumber = 7;
     private readonly MidiInputService _midiInputService;
     private readonly SystemVolumeService? _systemVolumeService;
+    private readonly System.Drawing.Icon _trayIconImage;
     private readonly Forms.NotifyIcon _trayIcon;
     private bool _exitRequested;
     private bool _resourcesDisposed;
@@ -45,6 +48,7 @@ public partial class MainWindow : Window
         // El evento inicial se lanzó en el constructor, antes de suscribirnos.
         UpdateDeviceStatus(_midiInputService.IsConnected, _midiInputService.DeviceName);
 
+        _trayIconImage = LoadAppIcon();
         _trayIcon = CreateTrayIcon();
     }
 
@@ -56,7 +60,7 @@ public partial class MainWindow : Window
 
         var icon = new Forms.NotifyIcon
         {
-            Icon = System.Drawing.SystemIcons.Application, // luego: icono propio
+            Icon = _trayIconImage,
             Text = "MidiController",
             ContextMenuStrip = menu,
             Visible = true,
@@ -64,6 +68,31 @@ public partial class MainWindow : Window
 
         icon.DoubleClick += (_, _) => ShowFromTray();
         return icon;
+    }
+
+    /// <summary>
+    /// Icono incrustado en el ejecutable (Assets\app.ico). Si el recurso no
+    /// estuviera disponible, se usa el genérico de Windows para no romper la app.
+    /// </summary>
+    private static System.Drawing.Icon LoadAppIcon()
+    {
+        try
+        {
+            StreamResourceInfo? resource =
+                Application.GetResourceStream(new Uri("pack://application:,,,/Assets/app.ico"));
+
+            if (resource is not null)
+            {
+                using Stream stream = resource.Stream;
+                return new System.Drawing.Icon(stream, Forms.SystemInformation.SmallIconSize);
+            }
+        }
+        catch (Exception)
+        {
+            // Sin recurso: seguimos con el icono por defecto.
+        }
+
+        return System.Drawing.SystemIcons.Application;
     }
 
     private void ShowFromTray()
@@ -107,6 +136,13 @@ public partial class MainWindow : Window
         _resourcesDisposed = true;
         _trayIcon.Visible = false;
         _trayIcon.Dispose();
+
+        // SystemIcons.Application es compartido: no se libera.
+        if (!ReferenceEquals(_trayIconImage, System.Drawing.SystemIcons.Application))
+        {
+            _trayIconImage.Dispose();
+        }
+
         _midiInputService.Dispose();
         _systemVolumeService?.Dispose();
     }

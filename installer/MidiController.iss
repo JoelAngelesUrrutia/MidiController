@@ -29,6 +29,8 @@ OutputBaseFilename=MidiController-Setup-{#MyAppVersion}
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
+; Mismo icono que la app, también para el setup y el desinstalador.
+SetupIconFile=..\Assets\app.ico
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayIcon={app}\{#MyAppExeName}

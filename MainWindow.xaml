@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:MidiController"
         mc:Ignorable="d"
         Title="MidiController"
+        Icon="Assets/app.ico"
         Height="450"
         Width="800">
     <Grid Margin="24">

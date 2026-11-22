@@ -9,7 +9,14 @@
     <UseWindowsForms>true</UseWindowsForms>   <!-- NotifyIcon de la bandeja -->
     <AssemblyName>MidiController</AssemblyName>
     <Version>1.0.0</Version>
+    <!-- Icono del .exe, del instalador, de la ventana y de la bandeja. -->
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Copia el icono dentro del ensamblado para usarlo como recurso WPF. -->
+    <Resource Include="Assets\app.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Melanchall.DryWetMidi" Version="8.0.3" />

@@ -1,5 +1,7 @@
 # MidiController
 
+<img src="Assets/app.png" alt="Icono de MidiController" width="72" align="right">
+
 Escucha un teclado MIDI (preferentemente el **AKM322**) y traduce sus controles:
 
 | Control MIDI | Acción |
@@ -115,6 +117,7 @@ Models/MmcCommand.cs   Comandos MMC reconocidos
 Services/MidiInputService.cs     Escucha MIDI + reconexión por DevicesWatcher
 Services/KeyMediaService.cs     MediaKeyService: teclas multimedia (SendInput)
 Services/SystemVolumeService.cs Volumen general (NAudio / Core Audio)
+Assets/app.ico         Icono multiresolución (ventana, bandeja, .exe y setup)
 installer/MidiController.iss    Script de Inno Setup
 ```
 
@@ -122,5 +125,7 @@ installer/MidiController.iss    Script de Inno Setup
 
 - El instalador no está firmado: Windows SmartScreen puede pedir confirmación
   ("Más información" → "Ejecutar de todas formas").
-- El icono de la bandeja es el genérico de Windows. Para uno propio hay que
-  añadir un `.ico` y cargarlo como recurso embebido.
+- El icono está en `Assets\app.ico` (cuadrado verde pastel con esquinas
+  redondeadas y fondo transparente, en 16–256 px). Se incrusta en el `.exe`
+  mediante `ApplicationIcon`, se usa como recurso WPF en la ventana y la bandeja,
+  y el setup lo toma con `SetupIconFile`.
