@@ -72,6 +72,40 @@ El setup:
 La versión del instalador se toma del `Version` del `.csproj`, así que hay que
 volver a publicar antes de recompilar el setup.
 
+## Publicar una versión (GitHub Releases)
+
+El workflow `.github/workflows/release.yml` compila todo en un runner de Windows
+y adjunta el instalador al release. Para sacar una versión:
+
+1. Subir el cambio de versión (si lo hay) en `MidiController.csproj`:
+
+   ```powershell
+   git add .
+   git commit -m "version 1.0.0"
+   git push origin main
+   ```
+
+2. Crear y empujar el tag con la misma versión:
+
+   ```powershell
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+
+El tag `v1.0.0` genera automáticamente el release **MidiController 1.0.0** con:
+
+- `MidiController-Setup-1.0.0.0.exe` (instalador generado por Inno Setup).
+- `SHA256SUMS.txt` para verificar la descarga.
+
+La versión del ejecutable se fuerza con `-p:Version=<tag sin la v>`, así que el
+instalador y el tag siempre coinciden.
+
+También se puede lanzar a mano desde la pestaña **Actions → Release → Run
+workflow**: en ese caso solo compila y deja el instalador como artefacto del
+run, sin crear release. Para un release manual desde la web de GitHub basta con
+`Draft a new release`, crear el tag y arrastrar el `.exe` de
+`installer\output\`.
+
 ## Estructura
 
 ```

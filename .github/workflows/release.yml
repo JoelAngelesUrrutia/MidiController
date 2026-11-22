@@ -1,0 +1,112 @@
+name: Release
+
+# Se dispara al empujar un tag vX.Y.Z (por ejemplo: git push origin v1.0.0).
+# También se puede lanzar a mano desde la pestaña Actions: en ese caso solo
+# compila y deja el instalador como artefacto del run, sin crear el release.
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Resolve version
+        id: version
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF_TYPE -eq "tag") {
+            # v1.0.0 -> 1.0.0
+            $version = $env:GITHUB_REF_NAME -replace "^v", ""
+          }
+          else {
+            # Ejecución manual: usar la versión declarada en el proyecto.
+            [xml]$project = Get-Content -LiteralPath "MidiController.csproj"
+            $version = $project.Project.PropertyGroup.Version
+          }
+          if ([string]::IsNullOrWhiteSpace($version)) {
+            throw "No se pudo determinar la version."
+          }
+          "value=$version" >> $env:GITHUB_OUTPUT
+          Write-Host "Version: $version"
+
+      - name: Publish single-file exe
+        shell: pwsh
+        run: |
+          dotnet publish MidiController.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:DebugType=None `
+            -p:DebugSymbols=false `
+            -p:Version="${{ steps.version.outputs.value }}" `
+            -o publish
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path -LiteralPath $iscc)) {
+            $iscc = Join-Path $env:LOCALAPPDATA "Programs\Inno Setup 6\ISCC.exe"
+          }
+          if (-not (Test-Path -LiteralPath $iscc)) {
+            throw "No se encontro ISCC.exe (Inno Setup)."
+          }
+          & $iscc installer\MidiController.iss
+          if ($LASTEXITCODE -ne 0) {
+            throw "ISCC fallo con codigo $LASTEXITCODE."
+          }
+
+      - name: Generate checksum
+        shell: pwsh
+        run: |
+          $setup = Get-ChildItem -LiteralPath "installer\output" -Filter "MidiController-Setup-*.exe" |
+            Select-Object -First 1
+          if (-not $setup) {
+            throw "No se genero el instalador."
+          }
+          $hash = (Get-FileHash -LiteralPath $setup.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $($setup.Name)" |
+            Set-Content -LiteralPath (Join-Path $setup.DirectoryName "SHA256SUMS.txt") -Encoding ascii
+          Get-Content -LiteralPath (Join-Path $setup.DirectoryName "SHA256SUMS.txt")
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: MidiController-Setup-${{ steps.version.outputs.value }}
+          path: |
+            installer/output/MidiController-Setup-*.exe
+            installer/output/SHA256SUMS.txt
+          if-no-files-found: error
+
+      - name: Create GitHub release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          name: MidiController ${{ steps.version.outputs.value }}
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            installer/output/MidiController-Setup-*.exe
+            installer/output/SHA256SUMS.txt
