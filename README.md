@@ -111,14 +111,16 @@ run, sin crear release. Para un release manual desde la web de GitHub basta con
 ## Estructura
 
 ```
-App.xaml(.cs)          Instancia única, arranque oculto y apagado explícito
-MainWindow.xaml(.cs)   Log, bandeja del sistema y estado de conexión MIDI
-Models/MmcCommand.cs   Comandos MMC reconocidos
-Services/MidiInputService.cs     Escucha MIDI + reconexión por DevicesWatcher
-Services/KeyMediaService.cs     MediaKeyService: teclas multimedia (SendInput)
-Services/SystemVolumeService.cs Volumen general (NAudio / Core Audio)
-Assets/app.ico         Icono multiresolución (ventana, bandeja, .exe y setup)
-installer/midicon.iss          Script de Inno Setup
+App.xaml(.cs)                      Instancia única, arranque oculto, composición y apagado
+Views/MainWindow.xaml(.cs)         Vista: enlaces, estado, log y bandeja del sistema
+ViewModels/MainWindowViewModel.cs  Estado, log y reglas MIDI → acciones (sin WPF)
+Models/MmcCommand.cs               Comandos MMC reconocidos
+Services/MidiInputService.cs       Escucha MIDI + reconexión por DevicesWatcher
+Services/MediaKeyService.cs        Teclas multimedia (SendInput)
+Services/SystemVolumeService.cs    Volumen general (NAudio / Core Audio)
+Services/TrayIconService.cs        Icono y menú de la bandeja del sistema
+Assets/app.ico                     Icono multiresolución (ventana, bandeja, .exe y setup)
+installer/midicon.iss              Script de Inno Setup
 ```
 
 ## Notas

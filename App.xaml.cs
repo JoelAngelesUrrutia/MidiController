@@ -5,6 +5,8 @@ using System.Windows;
 // WinForms también define Application (el ImplicitUsings de UseWindowsForms lo
 // agrega como global using), así que hay que decir cuál queremos.
 using Application = System.Windows.Application;
+using Midicon.Services;
+using Midicon.ViewModels;
 
 namespace Midicon;
 
@@ -72,7 +74,29 @@ public partial class App : Application
         bool startHidden = e.Args.Any(arg =>
             string.Equals(arg, "--background", StringComparison.OrdinalIgnoreCase));
 
-        var window = new MainWindow();
+        // Composition root: aquí se crean los servicios, el ViewModel y la vista.
+        // El volumen puede fallar (sin dispositivo de salida); en ese caso se
+        // arranca igualmente y se deja constancia en el log.
+        SystemVolumeService? systemVolumeService = null;
+        string? volumeError = null;
+
+        try
+        {
+            systemVolumeService = new SystemVolumeService();
+        }
+        catch (Exception ex)
+        {
+            volumeError = $"[error] Volumen del sistema no disponible: {ex.Message}";
+        }
+
+        var viewModel = new MainWindowViewModel(new MidiInputService(), systemVolumeService);
+
+        if (volumeError is not null)
+        {
+            viewModel.AppendLog(volumeError);
+        }
+
+        var window = new Views.MainWindow(viewModel);
         MainWindow = window;
 
         if (!startHidden)
@@ -84,7 +108,7 @@ public partial class App : Application
 
     private void ShowMainWindow()
     {
-        if (MainWindow is not MainWindow window)
+        if (MainWindow is not Views.MainWindow window)
         {
             return;
         }
@@ -105,7 +129,7 @@ public partial class App : Application
     {
         // Apagado/cierre de sesión de Windows: salir limpiamente (la X normal
         // solo oculta, así que hay que pedir el cierre de verdad).
-        if (MainWindow is MainWindow window)
+        if (MainWindow is Views.MainWindow window)
         {
             window.RequestExit();
         }
