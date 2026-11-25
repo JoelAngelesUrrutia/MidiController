@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
-namespace MidiController.Services;
+namespace Midicon.Services;
 
 /// <summary>
 /// Envía teclas multimedia de Windows (Play/Pausa, anterior, siguiente):

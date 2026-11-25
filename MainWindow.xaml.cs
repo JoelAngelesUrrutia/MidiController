@@ -7,10 +7,10 @@ using System.Windows.Resources;
 // agrega como global using), así que hay que decir cuál queremos.
 using Application = System.Windows.Application;
 using Forms = System.Windows.Forms;
-using MidiController.Models;
-using MidiController.Services;
+using Midicon.Models;
+using Midicon.Services;
 
-namespace MidiController;
+namespace Midicon;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml
@@ -61,7 +61,7 @@ public partial class MainWindow : Window
         var icon = new Forms.NotifyIcon
         {
             Icon = _trayIconImage,
-            Text = "MidiController",
+            Text = "Midicon",
             ContextMenuStrip = menu,
             Visible = true,
         };

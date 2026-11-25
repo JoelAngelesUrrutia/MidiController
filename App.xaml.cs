@@ -6,12 +6,12 @@ using System.Windows;
 // agrega como global using), así que hay que decir cuál queremos.
 using Application = System.Windows.Application;
 
-namespace MidiController;
+namespace Midicon;
 
 public partial class App : Application
 {
-    private const string MutexName = "MidiController.SingleInstance";
-    private const string ShowWindowEventName = "MidiController.ShowWindow";
+    private const string MutexName = "midicon.singleinstance";
+    private const string ShowWindowEventName = "midicon.showwindow";
 
     private Mutex? _singleInstanceMutex;
     private EventWaitHandle? _showWindowEvent;

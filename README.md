@@ -1,6 +1,6 @@
-# MidiController
+# Midicon
 
-<img src="Assets/app.png" alt="Icono de MidiController" width="72" align="right">
+<img src="Assets/app.png" alt="Icono de Midicon" width="72" align="right">
 
 Escucha un teclado MIDI (preferentemente el **AKM322**) y traduce sus controles:
 
@@ -40,19 +40,19 @@ dotnet build
 ## Publicar
 
 ```powershell
-dotnet publish MidiController.csproj -c Release -r win-x64 --self-contained true `
+dotnet publish midicon.csproj -c Release -r win-x64 --self-contained true `
   -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
   -p:DebugType=None -p:DebugSymbols=false `
   -o publish
 ```
 
-Queda un único `publish\MidiController.exe` autocontenido (no hace falta instalar
+Queda un único `publish\midicon.exe` autocontenido (no hace falta instalar
 el runtime de .NET en la máquina destino).
 
 ## Crear el instalador
 
 ```powershell
-& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\MidiController.iss
+& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\midicon.iss
 ```
 
 Si Inno se instaló por usuario, `ISCC.exe` está en:
@@ -61,25 +61,25 @@ Si Inno se instaló por usuario, `ISCC.exe` está en:
 %LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe
 ```
 
-Resultado: `installer\output\MidiController-Setup-<versión>.exe`.
+Resultado: `installer\output\Midicon-Setup-<versión>.exe`.
 
 El setup:
 
-- Instala por usuario en `%LOCALAPPDATA%\Programs\MidiController` (sin UAC).
+- Instala por usuario en `%LOCALAPPDATA%\Programs\Midicon` (sin UAC).
 - Crea accesos directos en el menú Inicio (y opcionalmente en el escritorio).
 - Opción marcada por defecto: iniciar con Windows en segundo plano, mediante
   `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` con el argumento `--background`.
 - Al actualizar/desinstalar cierra la instancia en ejecución y borra el autostart.
 
-La versión del instalador se toma del `Version` del `.csproj`, así que hay que
-volver a publicar antes de recompilar el setup.
+La versión del instalador se toma del `Version` de `midicon.csproj`, así que hay
+que volver a publicar antes de recompilar el setup.
 
 ## Publicar una versión (GitHub Releases)
 
 El workflow `.github/workflows/release.yml` compila todo en un runner de Windows
 y adjunta el instalador al release. Para sacar una versión:
 
-1. Subir el cambio de versión (si lo hay) en `MidiController.csproj`:
+1. Subir el cambio de versión (si lo hay) en `midicon.csproj`:
 
    ```powershell
    git add .
@@ -94,9 +94,9 @@ y adjunta el instalador al release. Para sacar una versión:
    git push origin v1.0.0
    ```
 
-El tag `v1.0.0` genera automáticamente el release **MidiController 1.0.0** con:
+El tag `v1.0.0` genera automáticamente el release **Midicon 1.0.0** con:
 
-- `MidiController-Setup-1.0.0.0.exe` (instalador generado por Inno Setup).
+- `Midicon-Setup-1.0.0.0.exe` (instalador generado por Inno Setup).
 - `SHA256SUMS.txt` para verificar la descarga.
 
 La versión del ejecutable se fuerza con `-p:Version=<tag sin la v>`, así que el
@@ -118,7 +118,7 @@ Services/MidiInputService.cs     Escucha MIDI + reconexión por DevicesWatcher
 Services/KeyMediaService.cs     MediaKeyService: teclas multimedia (SendInput)
 Services/SystemVolumeService.cs Volumen general (NAudio / Core Audio)
 Assets/app.ico         Icono multiresolución (ventana, bandeja, .exe y setup)
-installer/MidiController.iss    Script de Inno Setup
+installer/midicon.iss          Script de Inno Setup
 ```
 
 ## Notas
@@ -129,3 +129,9 @@ installer/MidiController.iss    Script de Inno Setup
   redondeadas y fondo transparente, en 16–256 px). Se incrusta en el `.exe`
   mediante `ApplicationIcon`, se usa como recurso WPF en la ventana y la bandeja,
   y el setup lo toma con `SetupIconFile`.
+- Nombres: en código y archivos se usa `midicon` en minúsculas (ensamblado,
+  ejecutable, mutex, script de Inno); de cara al usuario todo se muestra como
+  **Midicon** (título de la ventana, bandeja, accesos directos, instalador).
+- Al actualizar desde la versión anterior (`MidiController`), el setup borra el
+  `.exe` y los accesos directos viejos y elimina su entrada de autostart; si la
+  app vieja está en la bandeja, ciérrala antes desde su menú **Salir**.

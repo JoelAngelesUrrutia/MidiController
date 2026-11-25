@@ -1,4 +1,4 @@
-namespace MidiController.Models;
+namespace Midicon.Models;
 
 /// <summary>
 /// Comandos MMC (MIDI Machine Control) que puede enviar el controlador.

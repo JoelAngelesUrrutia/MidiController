@@ -1,6 +1,6 @@
 using NAudio.CoreAudioApi;
 
-namespace MidiController.Services;
+namespace Midicon.Services;
 
 /// <summary>
 /// Controla el volumen general (master) del dispositivo de salida predeterminado.

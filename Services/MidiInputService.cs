@@ -2,9 +2,9 @@ using Melanchall.DryWetMidi.Common;
 using Melanchall.DryWetMidi.Core;
 using Melanchall.DryWetMidi.Multimedia;
 using Melanchall.DryWetMidi.MusicTheory;
-using MidiController.Models;
+using Midicon.Models;
 
-namespace MidiController.Services;
+namespace Midicon.Services;
 
 /// <summary>
 /// Escucha el primer dispositivo MIDI de entrada disponible (preferentemente

@@ -35,7 +35,7 @@ jobs:
           }
           else {
             # Ejecución manual: usar la versión declarada en el proyecto.
-            [xml]$project = Get-Content -LiteralPath "MidiController.csproj"
+            [xml]$project = Get-Content -LiteralPath "midicon.csproj"
             $version = $project.Project.PropertyGroup.Version
           }
           if ([string]::IsNullOrWhiteSpace($version)) {
@@ -47,7 +47,7 @@ jobs:
       - name: Publish single-file exe
         shell: pwsh
         run: |
-          dotnet publish MidiController.csproj `
+          dotnet publish midicon.csproj `
             -c Release `
             -r win-x64 `
             --self-contained true `
@@ -72,7 +72,7 @@ jobs:
           if (-not (Test-Path -LiteralPath $iscc)) {
             throw "No se encontro ISCC.exe (Inno Setup)."
           }
-          & $iscc installer\MidiController.iss
+          & $iscc installer\midicon.iss
           if ($LASTEXITCODE -ne 0) {
             throw "ISCC fallo con codigo $LASTEXITCODE."
           }
@@ -80,7 +80,7 @@ jobs:
       - name: Generate checksum
         shell: pwsh
         run: |
-          $setup = Get-ChildItem -LiteralPath "installer\output" -Filter "MidiController-Setup-*.exe" |
+          $setup = Get-ChildItem -LiteralPath "installer\output" -Filter "Midicon-Setup-*.exe" |
             Select-Object -First 1
           if (-not $setup) {
             throw "No se genero el instalador."
@@ -93,9 +93,9 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: MidiController-Setup-${{ steps.version.outputs.value }}
+          name: Midicon-Setup-${{ steps.version.outputs.value }}
           path: |
-            installer/output/MidiController-Setup-*.exe
+            installer/output/Midicon-Setup-*.exe
             installer/output/SHA256SUMS.txt
           if-no-files-found: error
 
@@ -103,10 +103,10 @@ jobs:
         if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
-          name: MidiController ${{ steps.version.outputs.value }}
+          name: Midicon ${{ steps.version.outputs.value }}
           tag_name: ${{ github.ref_name }}
           generate_release_notes: true
           fail_on_unmatched_files: true
           files: |
-            installer/output/MidiController-Setup-*.exe
+            installer/output/Midicon-Setup-*.exe
             installer/output/SHA256SUMS.txt
